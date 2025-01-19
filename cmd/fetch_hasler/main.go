@@ -9,7 +9,6 @@ import (
 )
 
 func main() {
-	// Make HTTP request
 	response, err := http.Get("https://entries.canoemarathon.org.uk/results/races/2024/tonbridge-marathon-2024")
 	if err != nil {
 		log.Fatal(err)
@@ -20,19 +19,17 @@ func main() {
 		log.Fatalf("status code error: %d %s\n", response.StatusCode, response.Status)
 	}
 
-	// Create a goquery document from the response body
 	document, err := goquery.NewDocumentFromReader(response.Body)
 	if err != nil {
 		log.Fatal("Error loading HTTP response body. ", err)
 	}
 
-	// ... (rest of the code)
-	races := document.Find("div#races-tabs-content")
-	if races.Size() == 0 {
+	eventSelection := document.Find("div#races-tabs-content")
+	if eventSelection.Size() == 0 {
 		log.Fatal("Races tab not found")
 	}
 
-	type raceResult struct {
+	type result struct {
 		position string
 		name     string
 		club     string
@@ -42,25 +39,20 @@ func main() {
 		points   string
 		pd       string
 	}
-	var results [][]raceResult
+	var event [][]result // event ||--|{ race ||--|{ result
 
-	races.Find(".tab-pane").Each(func(i int, race *goquery.Selection) { // for each Race
-		// log.Println(division)
-		var aRace struct {
-			race    string
-			results []raceResult
+	eventSelection.Find(".tab-pane").Each(func(i int, raceSelection *goquery.Selection) { // for each Race
+		var race struct {
+			raceName string
+			results  []result
 		}
-		division, _ := race.Attr("id")
-		aRace.race = division
-		race.Find("tr[data-result-id]").Each(func(j int, result *goquery.Selection) { // for each Result
-			// log.Print("found result")
-			var rr raceResult
-			result.Find("td").Each(func(k int, cell *goquery.Selection) {
-				// Extract data from each cell
+		divisionID, _ := raceSelection.Attr("id")
+		race.raceName = divisionID
+		raceSelection.Find("tr[data-result-id]").Each(func(i int, resultSelection *goquery.Selection) { // for each Result
+			var rr result
+			resultSelection.Find("td").Each(func(i int, cell *goquery.Selection) {
 				cellText := cell.Text()
-				// ... (process and store the cell data)
-				// log.Println(cellText)
-				switch k {
+				switch i {
 				case 0:
 					rr.position = cellText
 				case 1:
@@ -79,14 +71,13 @@ func main() {
 					rr.pd = cellText
 				}
 			})
-			aRace.results = append(aRace.results, rr)
-			// log.Println()
+			race.results = append(race.results, rr)
 		})
-		results = append(results, aRace.results)
+		event = append(event, race.results)
 	})
-	// fmt.Println(results)
+
 	fmt.Println()
-	for i, rr := range results {
-		fmt.Printf("race %d had %d paddlers %v\n\n", i, len(rr), results[i])
+	for i, rr := range event {
+		fmt.Printf("race %d had %d paddlers %v\n\n", i, len(rr), event[i])
 	}
 }
