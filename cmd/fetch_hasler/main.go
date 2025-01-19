@@ -9,6 +9,9 @@ import (
 )
 
 func main() {
+
+	// access web page and locate races data
+
 	response, err := http.Get("https://entries.canoemarathon.org.uk/results/races/2024/tonbridge-marathon-2024")
 	if err != nil {
 		log.Fatal(err)
@@ -29,6 +32,9 @@ func main() {
 		log.Fatal("Races tab not found")
 	}
 
+	// define datastructure:
+	// event ||--|{ race ||--|{ result
+
 	type result struct {
 		position string
 		name     string
@@ -39,45 +45,53 @@ func main() {
 		points   string
 		pd       string
 	}
-	var event [][]result // event ||--|{ race ||--|{ result
+
+	type race struct {
+		raceName string
+		results  []result
+	}
+
+	type event []race
+
+	var e event
+
+	// parse web page
 
 	eventSelection.Find(".tab-pane").Each(func(i int, raceSelection *goquery.Selection) { // for each Race
-		var race struct {
-			raceName string
-			results  []result
-		}
-		divisionID, _ := raceSelection.Attr("id")
-		race.raceName = divisionID
+		var r race
+		r.raceName, _ = raceSelection.Attr("id")
 		raceSelection.Find("tr[data-result-id]").Each(func(i int, resultSelection *goquery.Selection) { // for each Result
-			var rr result
+			var rs result
 			resultSelection.Find("td").Each(func(i int, cell *goquery.Selection) {
 				cellText := cell.Text()
 				switch i {
 				case 0:
-					rr.position = cellText
+					rs.position = cellText
 				case 1:
-					rr.name = cellText
+					rs.name = cellText
 				case 2:
-					rr.club = cellText
+					rs.club = cellText
 				case 3:
-					rr.class = cellText
+					rs.class = cellText
 				case 4:
-					rr.div = cellText
+					rs.div = cellText
 				case 6:
-					rr.time = cellText
+					rs.time = cellText
 				case 7:
-					rr.points = cellText
+					rs.points = cellText
 				case 8:
-					rr.pd = cellText
+					rs.pd = cellText
 				}
 			})
-			race.results = append(race.results, rr)
+			r.results = append(r.results, rs)
 		})
-		event = append(event, race.results)
+		e = append(e, r)
 	})
 
+	// print results
+
 	fmt.Println()
-	for i, rr := range event {
-		fmt.Printf("race %d had %d paddlers %v\n\n", i, len(rr), event[i])
+	for i, r := range e {
+		fmt.Printf("race %d %s had %d paddlers\n %v\n\n", i+1, r.raceName, len(r.results), e[i])
 	}
 }
