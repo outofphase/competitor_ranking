@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"log"
 	"net/http"
+	"sort"
 
 	"github.com/PuerkitoBio/goquery"
 )
@@ -86,6 +87,15 @@ func main() {
 			r.results = append(r.results, rs)
 		})
 		e = append(e, r)
+	})
+
+	// sort races
+
+	sort.Slice(e, func(i, j int) bool {
+		if len(e[i].raceName) < len(e[j].raceName) {
+			return true
+		}
+		return e[i].raceName < e[j].raceName
 	})
 
 	// print results
