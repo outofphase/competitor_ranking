@@ -33,55 +33,34 @@ func main() {
 		log.Fatal("Races tab not found")
 	}
 
-	// define datastructure:
-	// event ||--|{ race ||--|{ result
-
-	type result struct {
-		position string
-		name     string
-		club     string
-		class    string
-		div      string
-		time     string
-		points   string
-		pd       string
-	}
-
-	type race struct {
-		raceName string
-		results  []result
-	}
-
-	type event []race
-
-	var e event
+	var e Event
 
 	// parse web page
 
 	eventSelection.Find(".tab-pane").Each(func(i int, raceSelection *goquery.Selection) { // for each Race
-		var r race
+		var r Race
 		r.raceName, _ = raceSelection.Attr("id")
 		raceSelection.Find("tr[data-result-id]").Each(func(i int, resultSelection *goquery.Selection) { // for each Result
-			var rs result
+			var rs Result
 			resultSelection.Find("td").Each(func(i int, cell *goquery.Selection) {
 				cellText := cell.Text()
 				switch i {
 				case 0:
-					rs.position = cellText
+					rs.Position = cellText
 				case 1:
-					rs.name = cellText
+					rs.Name = cellText
 				case 2:
-					rs.club = cellText
+					rs.Club = cellText
 				case 3:
-					rs.class = cellText
+					rs.Class = cellText
 				case 4:
-					rs.div = cellText
+					rs.Div = cellText
 				case 6:
-					rs.time = cellText
+					rs.Time = cellText
 				case 7:
-					rs.points = cellText
+					rs.Points = cellText
 				case 8:
-					rs.pd = cellText
+					rs.Pd = cellText
 				}
 			})
 			r.results = append(r.results, rs)
@@ -104,4 +83,6 @@ func main() {
 	for i, r := range e {
 		fmt.Printf("race %d %s had %d paddlers\n %v\n\n", i+1, r.raceName, len(r.results), e[i])
 	}
+
+	WriteData(e[0].results)
 }
