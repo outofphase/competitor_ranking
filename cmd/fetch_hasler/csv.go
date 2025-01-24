@@ -6,22 +6,25 @@ import (
 	"github.com/gocarina/gocsv"
 )
 
-func denormaliseEvent(e Event) []DenormalisedResult {
-	var results []DenormalisedResult
-	var dr DenormalisedResult
+func denormalise(event Event) []DenormalisedResult {
+	var (
+		results []DenormalisedResult
+		dr      DenormalisedResult
+	)
+	for _, r := range event {
+		dr.RaceName = r.raceName
+		for _, rs := range r.results {
+			dr.Position = rs.Position
+			dr.Name = rs.Name
+			dr.Club = rs.Club
+			dr.Class = rs.Class
+			dr.Div = rs.Div
+			dr.Time = rs.Time
+			dr.Points = rs.Points
+			dr.Pd = rs.Pd
 
-	for _, r := range e[0].results {
-		dr.RaceName = e[0].raceName
-		dr.Position = r.Position
-		dr.Name = r.Name
-		dr.Club = r.Club
-		dr.Class = r.Class
-		dr.Div = r.Div
-		dr.Time = r.Time
-		dr.Points = r.Points
-		dr.Pd = r.Pd
-
-		results = append(results, dr)
+			results = append(results, dr)
+		}
 	}
 	return results
 }

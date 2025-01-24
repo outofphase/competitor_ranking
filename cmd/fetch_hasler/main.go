@@ -84,5 +84,5 @@ func main() {
 		fmt.Printf("race %d %s had %d paddlers\n %v\n\n", i+1, r.raceName, len(r.results), e[i])
 	}
 
-	WriteData(denormaliseEvent(e))
+	WriteData(denormalise(e))
 }
