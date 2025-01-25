@@ -29,7 +29,8 @@ func denormalise(event Event) []DenormalisedResult {
 	return results
 }
 
-func WriteData(data []DenormalisedResult) {
+func WriteData(event Event) {
+	data := denormalise(event)
 	eventFile, err := os.OpenFile("event.csv", os.O_WRONLY|os.O_CREATE|os.O_TRUNC, 0664)
 	if err != nil {
 		panic(err)
